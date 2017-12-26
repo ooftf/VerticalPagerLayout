@@ -22,20 +22,27 @@ class VerticalViewPager : ViewPager {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         setPageTransformer(false, transformer)
     }
+
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         Log.e("evY", "" + ev.y)
         var intercept = false
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> intercept = false
             MotionEvent.ACTION_MOVE -> {
-                val edgeWrapper = transformer.showing as EdgeWrapper
-                if (edgeWrapper.isTop()) {//顶部
-                    if (ev.y - lastY > 0) {
-                        intercept = true
+                if (transformer.showing is EdgeWrapper) {
+                    val edgeWrapper = transformer.showing as EdgeWrapper
+                    if (edgeWrapper.isTop()) {//顶部
+                        if (ev.y - lastY > 0) {
+                            intercept = true
+                        }
                     }
-                }
-                if (edgeWrapper.isBottom()) {//底部
-                    if (ev.y - lastY < 0) {
+                    if (edgeWrapper.isBottom()) {//底部
+                        if (ev.y - lastY < 0) {
+                            intercept = true
+                        }
+                    }
+                } else {
+                    if (ev.y != lastY) {
                         intercept = true
                     }
                 }
