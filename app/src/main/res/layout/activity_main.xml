@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.ooftf.verticalviewpager.MainActivity">
-    <com.ooftf.vertical.VerticalViewPager
+    <com.ooftf.vertical.VerticalPagerLayout
         android:background="@color/colorAccent"
-        android:id="@+id/verticalViewPgar"
+        android:id="@+id/verticalViewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 </android.support.constraint.ConstraintLayout>

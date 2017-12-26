@@ -31,15 +31,11 @@ class VerticalViewPager : ViewPager {
             MotionEvent.ACTION_MOVE -> {
                 if (transformer.showing is EdgeWrapper) {
                     val edgeWrapper = transformer.showing as EdgeWrapper
-                    if (edgeWrapper.isTop()) {//顶部
-                        if (ev.y - lastY > 0) {
+                    if (edgeWrapper.isTop()&&ev.y - lastY > 0) {//顶部
                             intercept = true
-                        }
                     }
-                    if (edgeWrapper.isBottom()) {//底部
-                        if (ev.y - lastY < 0) {
+                    if (edgeWrapper.isBottom()&&ev.y - lastY < 0) {//底部
                             intercept = true
-                        }
                     }
                 } else {
                     if (ev.y != lastY) {
