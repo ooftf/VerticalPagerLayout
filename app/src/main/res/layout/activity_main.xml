@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.ooftf.verticalviewpager.MainActivity">
     <com.ooftf.vertical.VerticalPagerLayout
-        android:background="@color/colorAccent"
+        android:background="#EEEEEE"
         android:id="@+id/verticalViewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

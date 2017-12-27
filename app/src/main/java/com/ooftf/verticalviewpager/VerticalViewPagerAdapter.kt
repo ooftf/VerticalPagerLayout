@@ -7,16 +7,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.webkit.WebView
+import android.widget.TextView
 
 /**
  * Created by 99474 on 2017/12/26 0026.
  */
-class VerticalViewPagerAdapter(var context:Context) : PagerAdapter() {
-    private var inflater:LayoutInflater = LayoutInflater.from(context)
-    private var cach:MutableMap<Int,View> = HashMap()
+class VerticalViewPagerAdapter(var context: Context) : PagerAdapter() {
+    private var inflater: LayoutInflater = LayoutInflater.from(context)
+    private var cach: MutableMap<Int, View> = HashMap()
     override fun isViewFromObject(view: View?, `object`: Any?): Boolean {
-        return  view == `object`
+        return view == `object`
     }
 
     override fun getCount(): Int {
@@ -25,30 +26,44 @@ class VerticalViewPagerAdapter(var context:Context) : PagerAdapter() {
 
     override fun instantiateItem(container: ViewGroup?, position: Int): Any {
         val recycler = cach[position]
-        val view = if (recycler == null){
-            val view = inflater.inflate(R.layout.page_scroll,container,false)
-            val child = view.findViewById<View>(R.id.view)
-            val button = view.findViewById<View>(R.id.button)
-            button.setOnClickListener {
-                Toast.makeText(context,"$position",Toast.LENGTH_SHORT).show()
+        val view = if (recycler == null) {
+            val view = inflater.inflate(R.layout.page_scroll, container, false)
+            val webView = view.findViewById<WebView>(R.id.webView)
+            webView.settings.javaScriptEnabled = true
+            when (position) {
+                0 -> {
+                    webView.loadUrl("https://github.com/marketplace")
+                }
+                1 -> {
+                    webView.loadUrl("https://www.kotlincn.net/")
+                }
+                2 -> {
+                    webView.loadUrl("https://developer.android.google.cn/index.html")
+                }
+                3 -> {
+                    webView.loadUrl("https://m.sogou.com/?fr=s-sogou&clk=s-sogou&prs=8&rfh=1")
+                }
+                else -> {
+                    webView.loadUrl("https://m.bilibili.com/index.html")
+                }
             }
-            when(position){
-                0->child.setBackgroundColor(Color.parseColor("#00FFFF"))
-                1->{child.setBackgroundColor(Color.parseColor("#FF00FF"))
-                    child.layoutParams.height = 500}
-                2->child.setBackgroundColor(Color.parseColor("#FFFF00"))
-                3->child.setBackgroundColor(Color.parseColor("#0000FF"))
-                else->child.setBackgroundColor(Color.parseColor("#FF0000"))
-            }
+            view.findViewById<TextView>(R.id.textView).setText("第${position}个Item")
             view
-        }else{
-            Log.e("instantiateItem","复用")
+        } else {
+            Log.e("instantiateItem", "复用")
             cach.remove(position)
             recycler
         }
 
         container?.addView(view)
         return view
+    }
+    fun buildContent(s:String):String{
+        var result=""
+        for (i in 0..200){
+            result+=s
+        }
+        return result
     }
     override fun destroyItem(container: ViewGroup?, position: Int, `object`: Any?) {
         container?.removeView(`object` as View?);

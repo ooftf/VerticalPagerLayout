@@ -3,26 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:scrollId="@+id/scrollView">
-
-    <ScrollView
-        android:id="@+id/scrollView"
+    app:scrollId="@+id/webView">
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <LinearLayout
-            android:orientation="vertical"
+        <TextView
+            android:paddingLeft="16dp"
+            android:gravity="center_vertical"
+            android:id="@+id/textView"
+            android:textSize="18dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary">
-            <View
-                android:id="@+id/view"
-                android:layout_width="match_parent"
-                android:layout_height="800dp"/>
-            <Button
-                android:id="@+id/button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-    </ScrollView>
+            android:layout_height="56dp" />
+        <WebView
+            android:layout_weight="1"
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"/>
+    </LinearLayout>
+
 </com.ooftf.vertical.ScrollEdgeLayout>
