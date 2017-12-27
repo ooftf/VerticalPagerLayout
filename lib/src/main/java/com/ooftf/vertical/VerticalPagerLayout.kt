@@ -10,7 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.Scroller
-import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 /**
@@ -18,6 +18,8 @@ import kotlin.collections.ArrayList
  * Created by master on 2016/3/28.
  */
 class VerticalPagerLayout : FrameLayout {
+    internal var TAG = "FlipLayout"
+
 
     /**
      * 松开时布局滑动动画时间
@@ -30,12 +32,12 @@ class VerticalPagerLayout : FrameLayout {
             field = value
             refreshViews()
         }
-    // private var positionMap = HashMap<Int, Any>()
-    private var items = ArrayList<ItemInfo>()
+    private var positionMap = HashMap<Int, Any>()
 
     constructor(context: Context) : super(context) {
         init()
     }
+
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         init()
@@ -64,7 +66,19 @@ class VerticalPagerLayout : FrameLayout {
                 intercept = false
             }
             MotionEvent.ACTION_MOVE -> {
-                intercept = judgeIntercept(ev)
+                val currentPager = findViewByPosition(position)
+                if (currentPager is EdgeWrapper) {
+                    if (currentPager.isTop() && ev.y - lastY > 0) {//顶部
+                        intercept = true
+                    }
+                    if (currentPager.isBottom() && ev.y - lastY < 0) {//底部
+                        intercept = true
+                    }
+                } else {
+                    if (ev.y != lastY) {
+                        intercept = true
+                    }
+                }
             }
             MotionEvent.ACTION_UP -> {
                 intercept = true
@@ -74,63 +88,38 @@ class VerticalPagerLayout : FrameLayout {
         return intercept
     }
 
-    private fun judgeIntercept(ev: MotionEvent): Boolean {
-        val currentPager = viewForPosition(position)
-        if (currentPager is EdgeWrapper) {
-            if (currentPager.isTop() && ev.y - lastY > 0) {//顶部
-                return true
-            }
-            if (currentPager.isBottom() && ev.y - lastY < 0) {//底部
-                return true
-            }
-
-        } else {
-            if (ev.y != lastY) {
-                return true
-            }
-        }
-        return false
-    }
-
     private fun refreshViews() {
         //移除不必要View
-        items.filter { it.position < position - 1 || it.position > position + 1 }
-                .forEach { removeForItemInfo(it) }
-        addNewView(position - 1)
-        addNewView(position)
-        addNewView(position + 1)
+        positionMap.keys
+                .filter { it < position - 1 || it > position + 1 }
+                .forEach {
+                    removeByPosition(it)
+                }
+        addView(position - 1)
+        addView(position)
+        addView(position + 1)
     }
 
-    private fun removeForItemInfo(item: ItemInfo) {
-        adapter?.destroyItem(this, item.position, item.obj)
-        items.remove(item)
+    private fun removeByPosition(position: Int) {
+        adapter?.destroyItem(this, position, positionMap[position])
+        positionMap.remove(position)
     }
 
-    private fun addNewView(position: Int) {
-        if (position < 0 && position >= adapter!!.count) return
-        items.forEach {
-            if (it.position == position) return
+    private fun addView(position: Int) {
+        adapter?.let { adapter ->
+            if (position < 0 && position >= adapter.count) return
+            if (positionMap.containsKey(position)) return
+            positionMap.put(position, adapter.instantiateItem(this, position))
         }
-        items.add(ItemInfo(position, adapter!!.instantiateItem(this, position)))
-
     }
 
-    private fun viewForPosition(position: Int): View? {
-        val itemInfo: ItemInfo? = itemInfoForPosition(position) ?: return null
-        return itemInfo?.let { viewForItemInfo(it) }
-    }
-
-    private fun viewForItemInfo(item: ItemInfo): View? {
+    private fun findViewByPosition(position: Int): View? {
+        val obj = positionMap[position]
         (0 until childCount).forEach {
-            if (adapter!!.isViewFromObject(getChildAt(it), item.obj)) {
+            if (adapter!!.isViewFromObject(getChildAt(it), obj)) {
                 return getChildAt(it)
             }
         }
-        return null
-    }
-
-    private fun itemInfoForPosition(position: Int): ItemInfo? {
-        items.forEach { if (it.position == position) return it }
         return null
     }
 
@@ -148,33 +137,25 @@ class VerticalPagerLayout : FrameLayout {
             }
             MotionEvent.ACTION_UP -> {
                 Log.e("ACTION_MOVE", "lastY:$lastY -- event.y:${event.y}")
-                gotoPager()
+                val protectionRange = height / 5
+                if (scrollY < height * position - protectionRange) {//上一页
+                    position = pageController(position - 1)
+                    mScroller.startScroll(0, scrollY, 0, height * position - scrollY, duration)
+                } else if (scrollY >= height * position - protectionRange && scrollY <= height * position + protectionRange) {
+                    //留在本页
+                    mScroller.startScroll(0, scrollY, 0, position * height - scrollY, duration)
+                    //position = position;
+                } else if (scrollY > height * position + protectionRange) {
+                    //下一页
+                    position = pageController(position + 1)
+                    mScroller.startScroll(0, scrollY, 0, height * position - scrollY, duration)
+                }
                 lastY = event.y
+                invalidate()
                 return false
             }
         }
         return true
-    }
-
-    /**
-     * 计算应该定位到哪一页
-     * 并开始滚动
-     */
-    private fun gotoPager() {
-        val protectionRange = height / 5
-        if (scrollY < height * position - protectionRange) {//上一页
-            position = pageController(position - 1)
-            mScroller.startScroll(0, scrollY, 0, height * position - scrollY, duration)
-        } else if (scrollY >= height * position - protectionRange && scrollY <= height * position + protectionRange) {
-            //留在本页
-            mScroller.startScroll(0, scrollY, 0, position * height - scrollY, duration)
-            //position = position;
-        } else if (scrollY > height * position + protectionRange) {
-            //下一页
-            position = pageController(position + 1)
-            mScroller.startScroll(0, scrollY, 0, height * position - scrollY, duration)
-        }
-        invalidate()
     }
 
     private fun pageController(src: Int): Int {
@@ -189,30 +170,17 @@ class VerticalPagerLayout : FrameLayout {
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val height = b - t
-        (0 until childCount).forEach {
-            var view = getChildAt(it)
-            var item = itemInfoForView(view)
-            item?.let {
-                view.layout(0, item.position * height, r - l, (item.position + 1) * height)
-            }
+        positionMap.keys.forEach {
+            findViewByPosition(it)?.layout(0, it * height, r - l, (it + 1) * height)
         }
-    }
-
-    private fun itemInfoForView(view: View): ItemInfo? {
-        items.forEach {
-            if (adapter!!.isViewFromObject(view, it.obj)) return it
-        }
-        return null
     }
 
     override fun computeScroll() {
-        if (mScroller.computeScrollOffset() && !mScroller.isFinished) {
+        if (mScroller.computeScrollOffset()) {
             scrollTo(mScroller.currX, mScroller.currY)
             postInvalidate()
-        } else {
+        }else{
             refreshViews()
         }
     }
-
-    class ItemInfo(var position: Int, var obj: Any)
 }

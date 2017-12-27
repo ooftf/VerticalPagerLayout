@@ -5,7 +5,9 @@ import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v4.view.ScrollingView
 import android.util.AttributeSet
+import android.util.Log
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.FrameLayout
 /**
  * Created by 99474 on 2017/12/25 0025.
@@ -56,8 +58,12 @@ class ScrollEdgeLayout : FrameLayout, EdgeWrapper {
         return if (scrollView is ScrollingView) {
             var scrollingView  = scrollView as ScrollingView
             scrollingView.computeVerticalScrollExtent()+computeHorizontalScrollOffset() == scrollingView.computeVerticalScrollRange()
-        } else {
-            scrollView.scrollY + height == scrollView.getChildAt(0).height
+        }else if (scrollView is WebView){
+            var webView =  scrollView as WebView
+            Log.e(((webView.height+webView.scrollY)*1.001).toString(),(webView.contentHeight*webView.scale).toString())
+            (webView.height+webView.scrollY)*1.001 >=webView.contentHeight*webView.scale//有些网站会有误差，具体原因不知，代表例子https://github.com/marketplace  会有大约5的误差
+        }else {
+            scrollView.scrollY + height >= scrollView.getChildAt(0).height
         }
     }
 }
