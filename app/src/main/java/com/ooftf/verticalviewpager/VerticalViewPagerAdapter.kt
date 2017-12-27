@@ -34,7 +34,8 @@ class VerticalViewPagerAdapter(var context:Context) : PagerAdapter() {
             }
             when(position){
                 0->child.setBackgroundColor(Color.parseColor("#00FFFF"))
-                1->child.setBackgroundColor(Color.parseColor("#FF00FF"))
+                1->{child.setBackgroundColor(Color.parseColor("#FF00FF"))
+                    child.layoutParams.height = 500}
                 2->child.setBackgroundColor(Color.parseColor("#FFFF00"))
                 3->child.setBackgroundColor(Color.parseColor("#0000FF"))
                 else->child.setBackgroundColor(Color.parseColor("#FF0000"))

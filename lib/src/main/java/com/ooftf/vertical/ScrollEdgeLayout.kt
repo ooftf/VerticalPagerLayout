@@ -5,6 +5,7 @@ import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v4.view.ScrollingView
 import android.util.AttributeSet
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 /**
@@ -57,7 +58,8 @@ class ScrollEdgeLayout : FrameLayout, EdgeWrapper {
             var scrollingView  = scrollView as ScrollingView
             scrollingView.computeVerticalScrollExtent()+computeHorizontalScrollOffset() == scrollingView.computeVerticalScrollRange()
         } else {
-            scrollView.scrollY + height == scrollView.getChildAt(0).height
+            Log.e("${ scrollView.scrollY + height}","${scrollView.getChildAt(0).height}");
+            scrollView.scrollY + height >= scrollView.getChildAt(0).height
         }
     }
 }
