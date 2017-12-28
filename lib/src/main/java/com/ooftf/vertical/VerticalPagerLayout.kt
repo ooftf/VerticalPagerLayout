@@ -5,7 +5,6 @@ import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v4.view.PagerAdapter
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
@@ -34,12 +33,13 @@ class VerticalPagerLayout : FrameLayout {
      */
     private fun resetLayout() {
         removeAllViews()
-        positionMap.clear()
+        items.clear()
         position = 0
         refreshViews()
     }
 
-    private var positionMap = HashMap<Int, Any>()
+    //private var positionMap = HashMap<Int, Any>()
+    private var items = ArrayList<ItemInfo>()
 
     constructor(context: Context) : super(context) {
         init()
@@ -84,7 +84,7 @@ class VerticalPagerLayout : FrameLayout {
     }
 
     private fun judgeIntercept(ev: MotionEvent): Boolean {
-        val currentPager = findViewByPosition(position)
+        val currentPager = viewForPosition(position)
         if (currentPager is EdgeWrapper) {
             if (currentPager.isTop() && ev.y - lastY > 0) {//顶部
                 return true
@@ -100,34 +100,45 @@ class VerticalPagerLayout : FrameLayout {
 
     private fun refreshViews() {
         //移除不必要View
-        positionMap.keys
-                .filter { it < position - 1 || it > position + 1 }
+        items
+                .filter { it.position < position - 1 || it.position > position + 1 }
                 .forEach {
-                    removeByPosition(it)
+                    removeForItemInfo(it)
                 }
-        addView(position - 1)
-        addView(position)
-        addView(position + 1)
+        addNewView(position - 1)
+        addNewView(position)
+        addNewView(position + 1)
     }
 
-    private fun removeByPosition(position: Int) {
-        adapter?.destroyItem(this, position, positionMap[position])
-        positionMap.remove(position)
+    private fun removeForItemInfo(item: ItemInfo) {
+        adapter?.destroyItem(this, position, item.obj)
+        items.remove(item)
     }
 
-    private fun addView(position: Int) {
-        adapter?.let { adapter ->
-            if (position < 0 && position >= adapter.count) return
-            if (positionMap.containsKey(position)) return
-            positionMap.put(position, adapter.instantiateItem(this, position))
-        }
+    private fun addNewView(position: Int) {
+        if (position < 0 && position >= adapter!!.count) return
+        items.forEach { if (it.position == position) return }
+        items.add(ItemInfo(position, adapter!!.instantiateItem(this, position)))
     }
 
-    private fun findViewByPosition(position: Int): View? {
-        val obj = positionMap[position]
+    private fun viewForPosition(position: Int): View? {
+        var item = itemInfoForPosition(position)
+        return viewFroItemInfo(item!!)
+    }
+
+    private fun viewFroItemInfo(itemInfo: ItemInfo): View? {
         (0 until childCount).forEach {
-            if (adapter!!.isViewFromObject(getChildAt(it), obj)) {
+            if (adapter!!.isViewFromObject(getChildAt(it), itemInfo.obj)) {
                 return getChildAt(it)
+            }
+        }
+        return null
+    }
+
+    private fun itemInfoForPosition(position: Int): ItemInfo? {
+        items.forEach {
+            if (position == it.position) {
+                return it
             }
         }
         return null
@@ -184,17 +195,29 @@ class VerticalPagerLayout : FrameLayout {
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val height = b - t
-        positionMap.keys.forEach {
-            findViewByPosition(it)?.layout(0, it * height, r - l, (it + 1) * height)
+        (0 until childCount).forEach {
+            var itemInfo = itemInfoForView(getChildAt(it));
+            getChildAt(it).layout(0, itemInfo!!.position * height, r - l, (itemInfo!!.position + 1) * height)
         }
     }
 
+    private fun itemInfoForView(child: View): ItemInfo? {
+        items.forEach {
+            if (adapter!!.isViewFromObject(child, it.obj)) {
+                return it
+            }
+        }
+        return null
+    }
+
     override fun computeScroll() {
-        if (mScroller.computeScrollOffset()&&!mScroller.isFinished) {
+        if (mScroller.computeScrollOffset() && !mScroller.isFinished) {
             scrollTo(mScroller.currX, mScroller.currY)
             postInvalidate()
         } else {
             refreshViews()
         }
     }
+
+    class ItemInfo(var position: Int, var obj: Any)
 }
