@@ -1,12 +1,12 @@
-package com.ooftf.verticalpager
+package com.ooftf.verticalpager.fragment
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.ooftf.verticalpager.R
 import kotlinx.android.synthetic.main.fragment_third.*
-import java.text.FieldPosition
 
 /**
  * Created by 99474 on 2017/12/28 0028.
@@ -25,7 +25,7 @@ class ThirdFragment(): Fragment() {
     }
     companion object {
         val ARGUMENT_POSITION = "argument_position"
-        fun newInstance(position: Int):ThirdFragment{
+        fun newInstance(position: Int): ThirdFragment {
             var fragment = ThirdFragment()
             var bundle = Bundle()
             bundle.putInt(ARGUMENT_POSITION,position)

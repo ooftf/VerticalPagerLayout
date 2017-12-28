@@ -1,4 +1,4 @@
-package com.ooftf.verticalpager
+package com.ooftf.verticalpager.fragment
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -11,13 +11,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.ooftf.verticalpager.R
+import com.ooftf.verticalpager.SpialeAdapter
 import kotlinx.android.synthetic.main.fragment_second.*
 
 /**
  * Created by 99474 on 2017/12/28 0028.
  */
 class SecondFragment : Fragment() {
-    private lateinit var adapter:SpialeAdapter
+    private lateinit var adapter: SpialeAdapter
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.e("onCreateView","container"+container.toString());
         var view = inflater.inflate(R.layout.fragment_second,container,false)
@@ -34,7 +36,7 @@ class SecondFragment : Fragment() {
             }
 
             override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder {
-                return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_spiale,parent,false))
+                return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_spiale, parent, false))
             }
 
             override fun getItemCount(): Int {

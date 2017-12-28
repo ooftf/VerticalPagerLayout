@@ -1,4 +1,4 @@
-package com.ooftf.verticalpager
+package com.ooftf.verticalpager.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -10,6 +10,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.ooftf.verticalpager.R
+import com.ooftf.verticalpager.SpialeAdapter
+import com.ooftf.verticalpager.SpialeAdapterBean
 import com.youth.banner.loader.ImageLoaderInterface
 import kotlinx.android.synthetic.main.fragment_first.*
 
@@ -17,7 +20,7 @@ import kotlinx.android.synthetic.main.fragment_first.*
  * Created by 99474 on 2017/12/28 0028.
  */
 class FirstFragment: Fragment() {
-    private lateinit var adapter:SpialeAdapter
+    private lateinit var adapter: SpialeAdapter
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.e("onCreateView","container"+container.toString());
         var view = inflater.inflate(R.layout.fragment_first,container,false)

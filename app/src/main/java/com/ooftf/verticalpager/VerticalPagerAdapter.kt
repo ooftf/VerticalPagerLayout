@@ -4,11 +4,14 @@ import android.content.Context
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
+import com.ooftf.verticalpager.fragment.FirstFragment
+import com.ooftf.verticalpager.fragment.SecondFragment
+import com.ooftf.verticalpager.fragment.ThirdFragment
 
 /**
  * Created by 99474 on 2017/12/26 0026.
  */
-class VerticalViewPagerFragmentAdapter(var context: Context,fm :FragmentManager) : FragmentPagerAdapter(fm) {
+class VerticalPagerAdapter(var context: Context, fm :FragmentManager) : FragmentPagerAdapter(fm) {
     override fun getCount(): Int {
         return 5
     }

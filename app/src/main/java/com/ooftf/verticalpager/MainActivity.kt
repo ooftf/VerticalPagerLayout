@@ -9,6 +9,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        verticalViewPager.adapter =VerticalViewPagerFragmentAdapter(this,supportFragmentManager)
+        verticalViewPager.adapter = VerticalPagerAdapter(this,supportFragmentManager)
+        verticalViewPager.setCurrentItem(3)
     }
 }

@@ -30,8 +30,9 @@ class VerticalPagerLayout : FrameLayout {
      * 触发翻页的速度
      */
     val TRIGGER_PAGE_VELOCITY = 3000;
+
+    var offscreenPageLimit = 1;
     private var mScroller: Scroller
-    private var currentPage = 0
     var velocityY = 0f
     val gestureDetector: GestureDetector
     private var items = ArrayList<ItemInfo>()
@@ -47,7 +48,6 @@ class VerticalPagerLayout : FrameLayout {
     private fun resetLayout() {
         removeAllViews()
         items.clear()
-        currentPage = 0
         scrollTo(0, 0)
         refreshViews()
     }
@@ -72,11 +72,12 @@ class VerticalPagerLayout : FrameLayout {
 
     // float startY;
     private var lastY = 0.toFloat()
-
+    var actionDownPage = 0;
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         var intercept = false
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
+                actionDownPage = getCurrentPage()
                 intercept = false
             }
             MotionEvent.ACTION_MOVE -> {
@@ -95,9 +96,9 @@ class VerticalPagerLayout : FrameLayout {
         super.scrollTo(x, y)
     }
 
-    //var touchDownPage = 0;
+
     private fun judgeIntercept(ev: MotionEvent): Boolean {
-        val currentView = viewForPosition(currentPage)
+        val currentView = viewForPosition(getCurrentPage())
         if (currentView is EdgeWrapper) {
             if (currentView.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
                 return true
@@ -115,14 +116,13 @@ class VerticalPagerLayout : FrameLayout {
         //移除不必要View
         adapter ?: return
         items
-                .filter { it.position < currentPage - 1 || it.position > currentPage + 1 }
+                .filter { it.position < getCurrentPage() - offscreenPageLimit || it.position > getCurrentPage() + offscreenPageLimit }
                 .forEach {
                     removeForItemInfo(it)
                 }
-        addNewView(currentPage - 1)
-        addNewView(currentPage)
-        addNewView(currentPage + 1)
-        //adapter!!.setPrimaryItem(this,position,itemInfoForPosition(position)!!.obj)
+        (getCurrentPage() - offscreenPageLimit..getCurrentPage() + offscreenPageLimit).forEach {
+            addNewView(it)
+        }
         adapter!!.finishUpdate(this)
 
     }
@@ -197,31 +197,29 @@ class VerticalPagerLayout : FrameLayout {
     private fun judgePage(fling: Boolean) {
         if (fling) {
             if (velocityY < 0) {//下一页
-                scrollToPage(currentPage + 1)
+                setCurrentItem(actionDownPage + 1)//此处不用getCurrentPage而是用actionDownPage 是为了防止在当手势滑动超过半个屏幕，并且触发fling的时候会连续翻两页
             } else {//上一页
-                scrollToPage(currentPage - 1)
+                setCurrentItem(actionDownPage - 1)
             }
             return
         }
-        val protectionRange = height / 5
-        if (scrollY < height * currentPage - protectionRange) {//上一页
-            scrollToPage(currentPage - 1)
-        } else if (scrollY >= height * currentPage - protectionRange && scrollY <= height * currentPage + protectionRange) {
-            //留在本页
-            scrollToPage(currentPage)
-        } else if (scrollY > height * currentPage + protectionRange) {
-            //下一页
-            scrollToPage(currentPage + 1)
-        }
+        setCurrentItem(getCurrentPage())
     }
 
     /**
      * 滚动到指定页面
      */
-    private fun scrollToPage(page: Int) {
-        currentPage = pageController(page)
-        mScroller.startScroll(0, scrollY, 0, height * currentPage - scrollY, SCROLL_DURATION)
-        invalidate()
+    fun setCurrentItem(page: Int, smooth: Boolean = true) {
+        if (height == 0) {
+            post { setCurrentItem(page, smooth) }
+            return
+        }
+        if (smooth) {
+            mScroller.startScroll(0, scrollY, 0, height * pageController(page) - scrollY, SCROLL_DURATION)
+            invalidate()
+        } else {
+            scrollTo(0, height * pageController(page))
+        }
     }
 
     /**
@@ -236,6 +234,13 @@ class VerticalPagerLayout : FrameLayout {
         } else src
     }
 
+    /**
+     * 得到的是当前占有试图最大的页面
+     */
+    private fun getCurrentPage(): Int {
+        if (height == 0) return 0
+        return Math.round(scrollY.toFloat() / height)
+    }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val height = b - t
