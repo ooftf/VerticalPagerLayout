@@ -1,6 +1,6 @@
 # VerticalPagerLayout
-* 类似一个竖向的ViewPager
-* 支持内部控件滚动
+* 类似竖向ViewPager控件
+* 支持内部滚动控件
 # 注意事项
 * VerticalPagerLayout本身没有实现点击事件，如果需要设置点击事件可对Item单独设置
 # 效果图
@@ -14,35 +14,43 @@ allprojects {
 }
 dependencies {
     compile 'com.github.ooftf:VerticalPagerLayout:1.0.0'
+    //根据自己项目设置support-v4版本
+    compile 'com.android.support:support-v4:26.1.0'
 }
 ```
 # 使用方式
+* XML布局
 ```xml
- <com.ooftf.spiale.SpialeLayout
-        app:scrollMillis="1000"
-        app:showMillis="3000"
-        android:layout_marginTop="36dp"
-        android:id="@+id/spialeLayout"
+ <com.ooftf.vertical.VerticalPagerLayout
+         android:id="@+id/verticalViewPager"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"/>
+```
+* 如果Item布局包含Vertical滚动布局，为了解决触摸冲突问题，需要设置Item根布局为ScrollEdgeLayout,并设置scrollId，如果还是无法解决触摸冲突需要自己实现EdgeWrapper
+```xml
+<com.ooftf.vertical.ScrollEdgeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:scrollId="@+id/recyclerView">
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#FFFFFF">
-    </com.ooftf.spiale.SpialeLayout>
+        android:layout_height="match_parent"/>
+</com.ooftf.vertical.ScrollEdgeLayout>
 ```
+* Java部分
 ```kotlin
-    BaseAdapter adapter = SpialeAdapter(this)
-    spialeLayout.adapter  = adapter
-    spialeLayout.setOnItemClickListener{ position, _, itemData ->
-                itemData as Bean
-                Toast.makeText(this,"$position :: ${itemData.text}",Toast.LENGTH_SHORT).show()
-    }
+verticalViewPager.setAdapter(PagerAdapter())
 ```
-# XML属性
+# ScrollEdgeLayout XML属性
 |属性名|描述|默认值|
 |---|---|---|
-|scrollMillis|滚动动画时间（毫秒）|2000|
-|showMillis|停止展示时间（毫秒）|2000|
-# SpialeLayout方法
+|并设置scrollId|指定滚动布局Id(必填)|无|
+# VerticalPagerLayout 方法
 |方法名|描述|
 |---|---|
 |setAdapter|设置适配器|
-|setOnItemClickListener|设置Item点击时间|
+|setOffscreenPageLimit|和ViewPager相同，设置上下每侧缓冲Item个数，默认1|
+|setCurrentItem|显示指定Item|
+

@@ -17,24 +17,10 @@ class VerticalPagerAdapter(var context: Context, fm :FragmentManager) : Fragment
     }
 
     override fun getItem(position: Int): Fragment {
-       when(position){
-           0-> return FirstFragment()
-           2-> return SecondFragment()
-           else->return ThirdFragment.newInstance(position)
-       }
+        return when(position){
+            0-> FirstFragment()
+            2-> SecondFragment()
+            else-> ThirdFragment.newInstance(position)
+        }
     }
-
- /*   override fun isViewFromObject(view: View, `object`: Any): Boolean {
-        return view == `object` //To change body of created functions use File | Settings | File Templates.
-    }*/
-
-//    private var inflater: LayoutInflater = LayoutInflater.from(context)
-    //private var cach: MutableMap<Int, View> = HashMap()
-   /* override fun getCount(): Int {
-        return 2
-    }*/
-   /* override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        container.removeView(`object` as View?);
-        //cach.put(position, `object` as View)
-    }*/
 }
