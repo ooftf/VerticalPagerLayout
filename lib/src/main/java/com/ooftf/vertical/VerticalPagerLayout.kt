@@ -82,17 +82,17 @@ class VerticalPagerLayout : FrameLayout {
         lastY = ev.y
         return intercept
     }
-
+    var triggerValue = 17;
     private fun judgeIntercept(ev: MotionEvent): Boolean {
         val currentPager = viewForPosition(position)
         if (currentPager is EdgeWrapper) {
-            if (currentPager.isTop() && ev.y - lastY > 0) {//顶部
+            if (currentPager.isTop() && ev.y - lastY > triggerValue) {//顶部
                 return true
             }
-            if (currentPager.isBottom() && ev.y - lastY < 0) {//底部
+            if (currentPager.isBottom() && ev.y - lastY < -triggerValue) {//底部
                 return true
             }
-        } else if (ev.y != lastY) {//当child没有滚动布局的时候，只要触摸再Y轴有移动就拦截
+        } else if (Math.abs(ev.y - lastY)>triggerValue) {//当child没有滚动布局的时候，只要触摸再Y轴有移动就拦截
             return true
         }
         return false
@@ -108,6 +108,9 @@ class VerticalPagerLayout : FrameLayout {
         addNewView(position - 1)
         addNewView(position)
         addNewView(position + 1)
+        //adapter!!.setPrimaryItem(this,position,itemInfoForPosition(position)!!.obj)
+        adapter!!.finishUpdate(this)
+
     }
 
     private fun removeForItemInfo(item: ItemInfo) {

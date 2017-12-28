@@ -14,17 +14,17 @@ import android.widget.TextView
  * Created by 99474 on 2017/12/26 0026.
  */
 class VerticalViewPagerAdapter(var context: Context) : PagerAdapter() {
-    private var inflater: LayoutInflater = LayoutInflater.from(context)
-    private var cach: MutableMap<Int, View> = HashMap()
-    override fun isViewFromObject(view: View?, `object`: Any?): Boolean {
-        return view == `object`
+    override fun isViewFromObject(view: View, `object`: Any): Boolean {
+        return view == `object` //To change body of created functions use File | Settings | File Templates.
     }
 
+    private var inflater: LayoutInflater = LayoutInflater.from(context)
+    private var cach: MutableMap<Int, View> = HashMap()
     override fun getCount(): Int {
         return 5
     }
 
-    override fun instantiateItem(container: ViewGroup?, position: Int): Any {
+    override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val recycler = cach[position]
         val view = if (recycler == null) {
             val view = inflater.inflate(R.layout.page_scroll, container, false)
@@ -65,8 +65,8 @@ class VerticalViewPagerAdapter(var context: Context) : PagerAdapter() {
         }
         return result
     }
-    override fun destroyItem(container: ViewGroup?, position: Int, `object`: Any?) {
-        container?.removeView(`object` as View?);
+    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
+        container.removeView(`object` as View?);
         cach.put(position, `object` as View)
     }
 }
