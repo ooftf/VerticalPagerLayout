@@ -52,5 +52,5 @@ verticalViewPager.setAdapter(PagerAdapter())
 |---|---|
 |setAdapter|设置适配器|
 |setOffscreenPageLimit|和ViewPager相同，设置上下每侧缓冲Item个数，默认1|
-|setCurrentItem|显示指定Item|
+|setCurrentItem|显示指定Item，需要设置Adapter之后调用才有效果|
 
