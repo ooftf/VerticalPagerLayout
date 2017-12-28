@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ooftf.verticalviewpager.MainActivity">
+    tools:context="com.ooftf.verticalpager.MainActivity">
     <com.ooftf.vertical.VerticalPagerLayout
         android:background="#EEEEEE"
         android:id="@+id/verticalViewPager"

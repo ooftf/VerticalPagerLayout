@@ -5,7 +5,7 @@ apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "com.ooftf.verticalviewpager"
+        applicationId "com.ooftf.verticalpager"
         minSdkVersion 14
         targetSdkVersion 26
         versionCode 1
