@@ -16,8 +16,8 @@ class VerticalViewPagerFragmentAdapter(var context: Context,fm :FragmentManager)
     override fun getItem(position: Int): Fragment {
        when(position){
            0-> return FirstFragment()
-           1-> return SecondFragment()
-           else->return FirstFragment()
+           2-> return SecondFragment()
+           else->return ThirdFragment.newInstance(position)
        }
     }
 

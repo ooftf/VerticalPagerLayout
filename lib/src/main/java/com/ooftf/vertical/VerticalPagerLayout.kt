@@ -5,6 +5,8 @@ import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v4.view.PagerAdapter
 import android.util.AttributeSet
+import android.util.Log
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
@@ -19,9 +21,20 @@ class VerticalPagerLayout : FrameLayout {
     /**
      * 松开时布局滑动动画时间
      */
-    private var duration = 400
-    private lateinit var mScroller: Scroller
-    private var position = 0
+    private var SCROLL_DURATION = 700
+    /**
+     * 触发拦截的距离
+     */
+    val TRIGGER_INTERCEPT_VALUE = 17;
+    /**
+     * 触发翻页的速度
+     */
+    val TRIGGER_PAGE_VELOCITY = 3000;
+    private var mScroller: Scroller
+    private var currentPage = 0
+    var velocityY = 0f
+    val gestureDetector: GestureDetector
+    private var items = ArrayList<ItemInfo>()
     var adapter: PagerAdapter? = null
         set(value) {
             field = value
@@ -34,32 +47,26 @@ class VerticalPagerLayout : FrameLayout {
     private fun resetLayout() {
         removeAllViews()
         items.clear()
-        position = 0
+        currentPage = 0
+        scrollTo(0, 0)
         refreshViews()
     }
 
     //private var positionMap = HashMap<Int, Any>()
-    private var items = ArrayList<ItemInfo>()
-
-    constructor(context: Context) : super(context) {
-        init()
-    }
 
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        init()
-    }
+    constructor(context: Context) : super(context)
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init()
-    }
+
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {
-        init()
-    }
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes)
 
-    private fun init() {
+    init {
+        gestureDetector = GestureDetector(GestureListener())
         mScroller = Scroller(context)
     }
 
@@ -82,17 +89,23 @@ class VerticalPagerLayout : FrameLayout {
         lastY = ev.y
         return intercept
     }
-    var triggerValue = 17;
+
+    override fun scrollTo(x: Int, y: Int) {
+        refreshViews()
+        super.scrollTo(x, y)
+    }
+
+    //var touchDownPage = 0;
     private fun judgeIntercept(ev: MotionEvent): Boolean {
-        val currentPager = viewForPosition(position)
-        if (currentPager is EdgeWrapper) {
-            if (currentPager.isTop() && ev.y - lastY > triggerValue) {//顶部
+        val currentView = viewForPosition(currentPage)
+        if (currentView is EdgeWrapper) {
+            if (currentView.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
                 return true
             }
-            if (currentPager.isBottom() && ev.y - lastY < -triggerValue) {//底部
+            if (currentView.isBottom() && ev.y - lastY < -TRIGGER_INTERCEPT_VALUE) {//底部
                 return true
             }
-        } else if (Math.abs(ev.y - lastY)>triggerValue) {//当child没有滚动布局的时候，只要触摸再Y轴有移动就拦截
+        } else if (Math.abs(ev.y - lastY) > TRIGGER_INTERCEPT_VALUE) {//当child没有滚动布局的时候，只要触摸再Y轴有移动就拦截
             return true
         }
         return false
@@ -100,21 +113,22 @@ class VerticalPagerLayout : FrameLayout {
 
     private fun refreshViews() {
         //移除不必要View
+        adapter ?: return
         items
-                .filter { it.position < position - 1 || it.position > position + 1 }
+                .filter { it.position < currentPage - 1 || it.position > currentPage + 1 }
                 .forEach {
                     removeForItemInfo(it)
                 }
-        addNewView(position - 1)
-        addNewView(position)
-        addNewView(position + 1)
+        addNewView(currentPage - 1)
+        addNewView(currentPage)
+        addNewView(currentPage + 1)
         //adapter!!.setPrimaryItem(this,position,itemInfoForPosition(position)!!.obj)
         adapter!!.finishUpdate(this)
 
     }
 
     private fun removeForItemInfo(item: ItemInfo) {
-        adapter?.destroyItem(this, position, item.obj)
+        adapter?.destroyItem(this, item.position, item.obj)
         items.remove(item)
     }
 
@@ -125,7 +139,7 @@ class VerticalPagerLayout : FrameLayout {
     }
 
     private fun viewForPosition(position: Int): View? {
-        var item = itemInfoForPosition(position)
+        val item = itemInfoForPosition(position)
         return viewFroItemInfo(item!!)
     }
 
@@ -148,13 +162,15 @@ class VerticalPagerLayout : FrameLayout {
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        mScroller.forceFinished(true)
+        val fling = gestureDetector.onTouchEvent(event)
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 lastY = event.y
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
-                var expect = scrollY + (lastY - event.y)
+                val expect = scrollY + (lastY - event.y)
                 if (expect >= 0 && expect <= height * (adapter!!.count - 1)) {
                     scrollBy(0, (lastY - event.y).toInt())
                 }
@@ -162,7 +178,12 @@ class VerticalPagerLayout : FrameLayout {
                 return true
             }
             MotionEvent.ACTION_UP -> {
-                gotoPager()
+                judgePage(fling)
+                lastY = event.y
+                return false
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                judgePage(fling)
                 lastY = event.y
                 return false
             }
@@ -170,22 +191,42 @@ class VerticalPagerLayout : FrameLayout {
         return true
     }
 
-    private fun gotoPager() {
-        val protectionRange = height / 5
-        if (scrollY < height * position - protectionRange) {//上一页
-            position = pageController(position - 1)
-            mScroller.startScroll(0, scrollY, 0, height * position - scrollY, duration)
-        } else if (scrollY >= height * position - protectionRange && scrollY <= height * position + protectionRange) {
-            //留在本页
-            mScroller.startScroll(0, scrollY, 0, position * height - scrollY, duration)
-        } else if (scrollY > height * position + protectionRange) {
-            //下一页
-            position = pageController(position + 1)
-            mScroller.startScroll(0, scrollY, 0, height * position - scrollY, duration)
+    /**
+     * 判断应该停留在哪一页
+     */
+    private fun judgePage(fling: Boolean) {
+        if (fling) {
+            if (velocityY < 0) {//下一页
+                scrollToPage(currentPage + 1)
+            } else {//上一页
+                scrollToPage(currentPage - 1)
+            }
+            return
         }
+        val protectionRange = height / 5
+        if (scrollY < height * currentPage - protectionRange) {//上一页
+            scrollToPage(currentPage - 1)
+        } else if (scrollY >= height * currentPage - protectionRange && scrollY <= height * currentPage + protectionRange) {
+            //留在本页
+            scrollToPage(currentPage)
+        } else if (scrollY > height * currentPage + protectionRange) {
+            //下一页
+            scrollToPage(currentPage + 1)
+        }
+    }
+
+    /**
+     * 滚动到指定页面
+     */
+    private fun scrollToPage(page: Int) {
+        currentPage = pageController(page)
+        mScroller.startScroll(0, scrollY, 0, height * currentPage - scrollY, SCROLL_DURATION)
         invalidate()
     }
 
+    /**
+     * 防止position超出边缘
+     */
     private fun pageController(src: Int): Int {
         if (src < 0) {
             return 0
@@ -217,10 +258,26 @@ class VerticalPagerLayout : FrameLayout {
         if (mScroller.computeScrollOffset() && !mScroller.isFinished) {
             scrollTo(mScroller.currX, mScroller.currY)
             postInvalidate()
-        } else {
-            refreshViews()
         }
     }
 
+    /* fun getCurrentPage(): Int {
+         if (height == 0) return 0
+         return Math.round(scrollY.toFloat() / height)
+     }*/
+
     class ItemInfo(var position: Int, var obj: Any)
+    /**
+     * 仅用作与判断Fling
+     */
+    inner class GestureListener() : GestureDetector.SimpleOnGestureListener() {
+
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            this@VerticalPagerLayout.velocityY = velocityY
+            Log.e("velocityY", velocityY.toString());
+            return Math.abs(velocityY) > TRIGGER_PAGE_VELOCITY
+        }
+    }
+
+
 }
