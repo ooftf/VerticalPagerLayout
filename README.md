@@ -41,7 +41,7 @@ dependencies {
 ```
 * Java部分
 ```kotlin
-verticalViewPager.setAdapter(PagerAdapter())
+verticalPagerLayout.setAdapter(PagerAdapter())
 ```
 # ScrollEdgeLayout XML属性
 |属性名|描述|默认值|
