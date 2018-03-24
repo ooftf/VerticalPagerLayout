@@ -46,7 +46,6 @@ class VerticalPagerLayout : FrameLayout {
      * 当更换adapter之后，重置所有信息
      */
     private fun resetLayout() {
-
         removeAllItem()
         scrollTo(0, 0)
         refreshViews()
@@ -124,6 +123,7 @@ class VerticalPagerLayout : FrameLayout {
         (getCurrentPage() - offscreenPageLimit..getCurrentPage() + offscreenPageLimit).forEach {
             addNewView(it)
         }
+        adapter?.setPrimaryItem(this,getCurrentPage(),itemInfoForPosition(getCurrentPage())!!.obj)
         adapter?.finishUpdate(this)
 
     }
@@ -283,11 +283,11 @@ class VerticalPagerLayout : FrameLayout {
     /**
      * 仅用作与判断Fling
      */
-    inner class GestureListener() : GestureDetector.SimpleOnGestureListener() {
+    inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
             this@VerticalPagerLayout.velocityY = velocityY
-            Log.e("velocityY", velocityY.toString());
+            Log.e("velocityY", velocityY.toString())
             return Math.abs(velocityY) > TRIGGER_PAGE_VELOCITY
         }
     }
