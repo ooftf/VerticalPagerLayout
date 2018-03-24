@@ -1,11 +1,12 @@
+[![](https://jitpack.io/v/ooftf/VerticalPagerLayout.svg)](https://jitpack.io/#ooftf/VerticalPagerLayout)
 # VerticalPagerLayout
 * 类似竖向ViewPager控件
 * 支持内部滚动控件
-# 注意事项
+## 注意事项
 * VerticalPagerLayout本身没有实现点击事件，如果需要设置点击事件可对Item单独设置
-# 效果图
+## 效果图
 ![](https://github.com/ooftf/VerticalPagerLayout/raw/master/art/verticalPagerLayout.gif)
-# Gradle配置
+## Gradle配置
 ```groovy
 allprojects {
     repositories {
@@ -13,12 +14,12 @@ allprojects {
     }
 }
 dependencies {
-    compile 'com.github.ooftf:VerticalPagerLayout:1.0.0'
+    compile 'com.github.ooftf:VerticalPagerLayout:1.0.1'
     //根据自己项目设置support-v4版本
     compile 'com.android.support:support-v4:26.1.0'
 }
 ```
-# 使用方式
+## 使用方式
 * XML布局
 ```xml
  <com.ooftf.vertical.VerticalPagerLayout
@@ -41,13 +42,13 @@ dependencies {
 ```
 * Java部分
 ```kotlin
-verticalViewPager.setAdapter(PagerAdapter())
+verticalPagerLayout.setAdapter(PagerAdapter())
 ```
-# ScrollEdgeLayout XML属性
+## ScrollEdgeLayout XML属性
 |属性名|描述|默认值|
 |---|---|---|
 |并设置scrollId|指定滚动布局Id(必填)|无|
-# VerticalPagerLayout 方法
+## VerticalPagerLayout 方法
 |方法名|描述|
 |---|---|
 |setAdapter|设置适配器|
