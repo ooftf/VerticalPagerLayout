@@ -46,8 +46,8 @@ class VerticalPagerLayout : FrameLayout {
      * 当更换adapter之后，重置所有信息
      */
     private fun resetLayout() {
-        removeAllViews()
-        items.clear()
+
+        removeAllItem()
         scrollTo(0, 0)
         refreshViews()
     }
@@ -115,6 +115,7 @@ class VerticalPagerLayout : FrameLayout {
     private fun refreshViews() {
         //移除不必要View
         adapter ?: return
+        adapter?.startUpdate(this)
         items
                 .filter { it.position < getCurrentPage() - offscreenPageLimit || it.position > getCurrentPage() + offscreenPageLimit }
                 .forEach {
@@ -123,10 +124,17 @@ class VerticalPagerLayout : FrameLayout {
         (getCurrentPage() - offscreenPageLimit..getCurrentPage() + offscreenPageLimit).forEach {
             addNewView(it)
         }
-        adapter!!.finishUpdate(this)
+        adapter?.finishUpdate(this)
 
     }
-
+    private fun removeAllItem(){
+        adapter?.startUpdate(this)
+        items.forEach {
+            adapter?.destroyItem(this, it.position, it.obj)
+        }
+        items.clear()
+        adapter?.finishUpdate(this)
+    }
     private fun removeForItemInfo(item: ItemInfo) {
         adapter?.destroyItem(this, item.position, item.obj)
         items.remove(item)
