@@ -14,7 +14,7 @@ allprojects {
     }
 }
 dependencies {
-    compile 'com.github.ooftf:VerticalPagerLayout:1.0.1'
+    compile 'com.github.ooftf:VerticalPagerLayout:1.0.3'
     //根据自己项目设置support-v4版本
     compile 'com.android.support:support-v4:26.1.0'
 }
