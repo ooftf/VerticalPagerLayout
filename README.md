@@ -23,17 +23,22 @@ dependencies {
 * XML布局
 ```xml
  <com.ooftf.vertical.VerticalPagerLayout
-         app:scrollId="@+id/recyclerView"
          android:id="@+id/verticalViewPager"
          android:layout_width="match_parent"
          android:layout_height="match_parent"/>
 ```
 * 如果Item布局包含Vertical滚动布局，为了解决触摸冲突问题，设置scrollId，如果还是无法解决触摸冲突需要自己调用VerticalPagerLayout.setScrollEdgeAnalyzer()设置边界分析器
-```xml
+```kotlin
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+
+    viewPager.setScrollEdgeAnalyzer { i, view ->
+           ScrollEdgeEngine(viewGroup.findViewById(R.id.recyclerView))
+        }
+
 ```
 * Java部分
 ```kotlin
