@@ -104,19 +104,19 @@ class VerticalPagerLayout : FrameLayout {
     private fun judgeIntercept(ev: MotionEvent): Boolean {
         val currentPage = getCurrentPage()
         val currentView = viewForPosition(currentPage)
-        var scrollEdgeEngine = mScrollEdgeAnalyzer(currentPage, currentView)
-        if (scrollEdgeEngine.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
-            return true
-        }
-        if (scrollEdgeEngine.isBottom() && ev.y - lastY < -TRIGGER_INTERCEPT_VALUE) {//底部
-            return true
+        mScrollEdgeAnalyzer?.let {
+            var scrollEdgeEngine = it(currentPage, currentView)
+            if (scrollEdgeEngine.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
+                return true
+            }
+            if (scrollEdgeEngine.isBottom() && ev.y - lastY < -TRIGGER_INTERCEPT_VALUE) {//底部
+                return true
+            }
         }
         return false
     }
 
-    var mScrollEdgeAnalyzer: (Int, View) -> EdgeWrapper = { i: Int, scrollView: View ->
-        ScrollEdgeEngine(scrollView)
-    }
+    var mScrollEdgeAnalyzer: ((Int, View) -> EdgeWrapper)? = null
 
     fun setScrollEdgeAnalyzer(scrollEdgeAnalyzer: (Int, View) -> EdgeWrapper) {
         this.mScrollEdgeAnalyzer = scrollEdgeAnalyzer
