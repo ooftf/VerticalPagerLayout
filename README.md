@@ -14,7 +14,7 @@ allprojects {
     }
 }
 dependencies {
-    compile 'com.github.ooftf:VerticalPagerLayout:1.0.3'
+    compile 'com.github.ooftf:VerticalPagerLayout:1.2.0'
     //根据自己项目设置support-v4版本
     compile 'com.android.support:support-v4:26.1.0'
 }
@@ -23,35 +23,31 @@ dependencies {
 * XML布局
 ```xml
  <com.ooftf.vertical.VerticalPagerLayout
+         app:scrollId="@+id/recyclerView"
          android:id="@+id/verticalViewPager"
          android:layout_width="match_parent"
          android:layout_height="match_parent"/>
 ```
-* 如果Item布局包含Vertical滚动布局，为了解决触摸冲突问题，需要设置Item根布局为ScrollEdgeLayout,并设置scrollId，如果还是无法解决触摸冲突需要自己实现EdgeWrapper
+* 如果Item布局包含Vertical滚动布局，为了解决触摸冲突问题，设置scrollId，如果还是无法解决触摸冲突需要自己调用VerticalPagerLayout.setScrollEdgeAnalyzer()设置边界分析器
 ```xml
-<com.ooftf.vertical.ScrollEdgeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:scrollId="@+id/recyclerView">
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-</com.ooftf.vertical.ScrollEdgeLayout>
 ```
 * Java部分
 ```kotlin
 verticalPagerLayout.setAdapter(PagerAdapter())
 ```
-## ScrollEdgeLayout XML属性
+## VerticalPagerLayout XML属性
 |属性名|描述|默认值|
 |---|---|---|
-|并设置scrollId|指定滚动布局Id(必填)|无|
+|并设置scrollId|指定滚动布局Id|无|
 ## VerticalPagerLayout 方法
 |方法名|描述|
 |---|---|
 |setAdapter|设置适配器|
 |setOffscreenPageLimit|和ViewPager相同，设置上下每侧缓冲Item个数，默认1|
 |setCurrentItem|显示指定Item，需要设置Adapter之后调用才有效果|
+|setScrollEdgeAnalyzer|设置边界分析器|
 

@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Scroller
 
@@ -25,11 +26,11 @@ class VerticalPagerLayout : FrameLayout {
     /**
      * 触发拦截的距离
      */
-    val TRIGGER_INTERCEPT_VALUE = 17;
+    val TRIGGER_INTERCEPT_VALUE = 17
     /**
      * 触发翻页的速度
      */
-    val TRIGGER_PAGE_VELOCITY = 3000;
+    val TRIGGER_PAGE_VELOCITY = 3000
 
     var offscreenPageLimit = 1;
     private var mScroller: Scroller
@@ -51,27 +52,41 @@ class VerticalPagerLayout : FrameLayout {
         refreshViews()
     }
 
-    //private var positionMap = HashMap<Int, Any>()
-
-
     constructor(context: Context) : super(context)
 
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        obtainAttrs(attrs)
+    }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        obtainAttrs(attrs)
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {
+        obtainAttrs(attrs)
+    }
 
     init {
         gestureDetector = GestureDetector(GestureListener())
         mScroller = Scroller(context)
     }
 
+    var scrollId = -1
+    private fun obtainAttrs(attrs: AttributeSet?) {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.VerticalPagerLayout)
+        scrollId = typedArray.getResourceId(R.styleable.VerticalPagerLayout_scrollId, -1)
+        typedArray.recycle()
+    }
+
     // float startY;
     private var lastY = 0.toFloat()
-    var actionDownPage = 0;
+    /**
+     * 获取到点击事件的Page 如要是为了防止一次滑动翻超过一页
+     */
+    private var actionDownPage = 0
+
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         var intercept = false
         when (ev.action) {
@@ -95,20 +110,37 @@ class VerticalPagerLayout : FrameLayout {
         super.scrollTo(x, y)
     }
 
-
+    /**
+     * 判断边界，从而判定是否拦截触摸事件
+     */
     private fun judgeIntercept(ev: MotionEvent): Boolean {
-        val currentView = viewForPosition(getCurrentPage())
-        if (currentView is EdgeWrapper) {
-            if (currentView.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
+        val currentPage = getCurrentPage()
+        val currentView = viewForPosition(currentPage)
+        val scrollView = currentView.findViewById<ViewGroup>(scrollId)
+        if (scrollView != null) {
+            var scrollEdgeEngine = mScrollEdgeAnalyzer(currentPage, scrollView)
+            if (scrollEdgeEngine.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
                 return true
             }
-            if (currentView.isBottom() && ev.y - lastY < -TRIGGER_INTERCEPT_VALUE) {//底部
+            if (scrollEdgeEngine.isBottom() && ev.y - lastY < -TRIGGER_INTERCEPT_VALUE) {//底部
                 return true
             }
         } else if (Math.abs(ev.y - lastY) > TRIGGER_INTERCEPT_VALUE) {//当child没有滚动布局的时候，只要触摸再Y轴有移动就拦截
             return true
         }
         return false
+    }
+
+    var mScrollEdgeAnalyzer: (Int, ViewGroup) -> EdgeWrapper = getDefaultScrollEdgeAnalyzer()
+
+    fun getDefaultScrollEdgeAnalyzer(): (Int, ViewGroup) -> EdgeWrapper {
+        return { i: Int, scrollView: ViewGroup ->
+            ScrollEdgeEngine(scrollView)
+        }
+    }
+
+    fun setScrollEdgeAnalyzer(scrollEdgeAnalyzer: (Int, ViewGroup) -> EdgeWrapper) {
+        this.mScrollEdgeAnalyzer = scrollEdgeAnalyzer
     }
 
     private fun refreshViews() {
@@ -123,11 +155,15 @@ class VerticalPagerLayout : FrameLayout {
         (getCurrentPage() - offscreenPageLimit..getCurrentPage() + offscreenPageLimit).forEach {
             addNewView(it)
         }
-        adapter?.setPrimaryItem(this,getCurrentPage(),itemInfoForPosition(getCurrentPage())!!.obj)
+        adapter?.setPrimaryItem(this, getCurrentPage(), itemInfoForPosition(getCurrentPage()).obj)
         adapter?.finishUpdate(this)
 
     }
-    private fun removeAllItem(){
+
+    /**
+     * 移除所有的View
+     */
+    private fun removeAllItem() {
         adapter?.startUpdate(this)
         items.forEach {
             adapter?.destroyItem(this, it.position, it.obj)
@@ -135,38 +171,48 @@ class VerticalPagerLayout : FrameLayout {
         items.clear()
         adapter?.finishUpdate(this)
     }
+
+    /**
+     * 根据ItemInfo 移除View
+     */
     private fun removeForItemInfo(item: ItemInfo) {
         adapter?.destroyItem(this, item.position, item.obj)
         items.remove(item)
     }
 
+    /**
+     * 根据位置信息 添加新的view
+     */
     private fun addNewView(position: Int) {
         if (position < 0 && position >= adapter!!.count) return
         items.forEach { if (it.position == position) return }
         items.add(ItemInfo(position, adapter!!.instantiateItem(this, position)))
     }
 
-    private fun viewForPosition(position: Int): View? {
+    /**
+     * 获取到指定位置的View
+     */
+    private fun viewForPosition(position: Int): View {
         val item = itemInfoForPosition(position)
-        return viewFroItemInfo(item!!)
+        return viewForItemInfo(item)
     }
 
-    private fun viewFroItemInfo(itemInfo: ItemInfo): View? {
+    private fun viewForItemInfo(itemInfo: ItemInfo): View {
         (0 until childCount).forEach {
             if (adapter!!.isViewFromObject(getChildAt(it), itemInfo.obj)) {
                 return getChildAt(it)
             }
         }
-        return null
+        throw NullPointerException()
     }
 
-    private fun itemInfoForPosition(position: Int): ItemInfo? {
+    private fun itemInfoForPosition(position: Int): ItemInfo {
         items.forEach {
             if (position == it.position) {
                 return it
             }
         }
-        return null
+        throw NullPointerException()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -258,13 +304,13 @@ class VerticalPagerLayout : FrameLayout {
         }
     }
 
-    private fun itemInfoForView(child: View): ItemInfo? {
+    private fun itemInfoForView(child: View): ItemInfo {
         items.forEach {
             if (adapter!!.isViewFromObject(child, it.obj)) {
                 return it
             }
         }
-        return null
+        throw NullPointerException()
     }
 
     override fun computeScroll() {
