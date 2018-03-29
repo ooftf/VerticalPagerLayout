@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.ooftf.verticalpager.MainActivity">
     <com.ooftf.vertical.VerticalPagerLayout
+        app:scrollId="@+id/scrollView"
         android:background="#EEEEEE"
         android:id="@+id/verticalViewPager"
         android:layout_width="match_parent"

@@ -55,30 +55,18 @@ class VerticalPagerLayout : FrameLayout {
     constructor(context: Context) : super(context)
 
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        obtainAttrs(attrs)
-    }
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        obtainAttrs(attrs)
-    }
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {
-        obtainAttrs(attrs)
-    }
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes)
 
     init {
         gestureDetector = GestureDetector(GestureListener())
         mScroller = Scroller(context)
     }
 
-    var scrollId = -1
-    private fun obtainAttrs(attrs: AttributeSet?) {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.VerticalPagerLayout)
-        scrollId = typedArray.getResourceId(R.styleable.VerticalPagerLayout_scrollId, -1)
-        typedArray.recycle()
-    }
 
     // float startY;
     private var lastY = 0.toFloat()
@@ -116,30 +104,21 @@ class VerticalPagerLayout : FrameLayout {
     private fun judgeIntercept(ev: MotionEvent): Boolean {
         val currentPage = getCurrentPage()
         val currentView = viewForPosition(currentPage)
-        val scrollView = currentView.findViewById<ViewGroup>(scrollId)
-        if (scrollView != null) {
-            var scrollEdgeEngine = mScrollEdgeAnalyzer(currentPage, scrollView)
-            if (scrollEdgeEngine.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
-                return true
-            }
-            if (scrollEdgeEngine.isBottom() && ev.y - lastY < -TRIGGER_INTERCEPT_VALUE) {//底部
-                return true
-            }
-        } else if (Math.abs(ev.y - lastY) > TRIGGER_INTERCEPT_VALUE) {//当child没有滚动布局的时候，只要触摸再Y轴有移动就拦截
+        var scrollEdgeEngine = mScrollEdgeAnalyzer(currentPage, currentView)
+        if (scrollEdgeEngine.isTop() && ev.y - lastY > TRIGGER_INTERCEPT_VALUE) {//顶部
+            return true
+        }
+        if (scrollEdgeEngine.isBottom() && ev.y - lastY < -TRIGGER_INTERCEPT_VALUE) {//底部
             return true
         }
         return false
     }
 
-    var mScrollEdgeAnalyzer: (Int, ViewGroup) -> EdgeWrapper = getDefaultScrollEdgeAnalyzer()
-
-    fun getDefaultScrollEdgeAnalyzer(): (Int, ViewGroup) -> EdgeWrapper {
-        return { i: Int, scrollView: ViewGroup ->
-            ScrollEdgeEngine(scrollView)
-        }
+    var mScrollEdgeAnalyzer: (Int, View) -> EdgeWrapper = { i: Int, scrollView: View ->
+        ScrollEdgeEngine(scrollView)
     }
 
-    fun setScrollEdgeAnalyzer(scrollEdgeAnalyzer: (Int, ViewGroup) -> EdgeWrapper) {
+    fun setScrollEdgeAnalyzer(scrollEdgeAnalyzer: (Int, View) -> EdgeWrapper) {
         this.mScrollEdgeAnalyzer = scrollEdgeAnalyzer
     }
 
@@ -299,8 +278,8 @@ class VerticalPagerLayout : FrameLayout {
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val height = b - t
         (0 until childCount).forEach {
-            var itemInfo = itemInfoForView(getChildAt(it));
-            getChildAt(it).layout(0, itemInfo!!.position * height, r - l, (itemInfo!!.position + 1) * height)
+            var itemInfo = itemInfoForView(getChildAt(it))
+            getChildAt(it).layout(0, itemInfo.position * height, r - l, (itemInfo.position + 1) * height)
         }
     }
 
