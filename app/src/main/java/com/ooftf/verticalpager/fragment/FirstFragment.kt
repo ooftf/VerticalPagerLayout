@@ -39,7 +39,7 @@ class FirstFragment: Fragment() {
                 return ImageView(context)
             }
 
-            override fun displayImage(context: Context?, path: Any?, imageView: ImageView?) {
+            override fun displayImage(context: Context, path: Any?, imageView: ImageView) {
                 Glide.with(context).load(path).into(imageView)
             }
 

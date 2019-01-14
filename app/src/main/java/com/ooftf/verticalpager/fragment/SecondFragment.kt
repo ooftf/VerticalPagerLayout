@@ -30,12 +30,13 @@ class SecondFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = object : RecyclerView.Adapter<ViewHolder>(){
+
             override fun onBindViewHolder(holder: ViewHolder, position: Int) {
                 holder.textView.setText("占位符数据::$position")
                 Glide.with(holder.image).load("https://github.com/ooftf/SpialeLayout/raw/master/ImageRepository/s7.png").into(holder.image)
             }
 
-            override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ViewHolder {
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
                 return ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_spiale, parent, false))
             }
 
