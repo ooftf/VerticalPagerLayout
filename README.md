@@ -44,6 +44,20 @@ dependencies {
 ```kotlin
 verticalPagerLayout.setAdapter(PagerAdapter())
 ```
+## 使用方式2
+* XML布局
+```xml
+ <com.ooftf.vertical.nested.NestedVerticalPagerLayout
+         android:id="@+id/verticalViewPager"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"/>
+```
+* 如果Item布局包含Vertical滚动布局，为了解决触摸冲突问题，需要时Nested系列控件
+
+* Java部分
+```kotlin
+verticalPagerLayout.setAdapter(PagerAdapter())
+```
 ## VerticalPagerLayout 方法
 |方法名|描述|
 |---|---|
