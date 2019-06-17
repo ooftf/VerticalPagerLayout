@@ -9,7 +9,6 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Scroller
 
@@ -22,7 +21,7 @@ class VerticalPagerLayout : FrameLayout {
     /**
      * 松开时布局滑动动画时间
      */
-    private var SCROLL_DURATION = 700
+    private var SCROLL_DURATION = 600
     /**
      * 触发拦截的距离
      */
@@ -125,18 +124,21 @@ class VerticalPagerLayout : FrameLayout {
     private fun refreshViews() {
         //移除不必要View
         adapter ?: return
-        adapter?.startUpdate(this)
-        items
-                .filter { it.position < getCurrentPage() - offscreenPageLimit || it.position > getCurrentPage() + offscreenPageLimit }
-                .forEach {
-                    removeForItemInfo(it)
-                }
-        (getCurrentPage() - offscreenPageLimit..getCurrentPage() + offscreenPageLimit).forEach {
-            addNewView(it)
+        adapter?.let {
+            it.startUpdate(this)
+            items
+                    .filter { it.position < getCurrentPage() - offscreenPageLimit || it.position > getCurrentPage() + offscreenPageLimit }
+                    .forEach {
+                        removeForItemInfo(it)
+                    }
+            var start = Math.max(0, getCurrentPage() - offscreenPageLimit)
+            var end = Math.min(it.count - 1, getCurrentPage() + offscreenPageLimit)
+            (start..end).forEach {
+                addNewView(it)
+            }
+            it.setPrimaryItem(this, getCurrentPage(), itemInfoForPosition(getCurrentPage()).obj)
+            it.finishUpdate(this)
         }
-        adapter?.setPrimaryItem(this, getCurrentPage(), itemInfoForPosition(getCurrentPage()).obj)
-        adapter?.finishUpdate(this)
-
     }
 
     /**
@@ -279,17 +281,20 @@ class VerticalPagerLayout : FrameLayout {
         val height = b - t
         (0 until childCount).forEach {
             var itemInfo = itemInfoForView(getChildAt(it))
-            getChildAt(it).layout(0, itemInfo.position * height, r - l, (itemInfo.position + 1) * height)
+            itemInfo?.let { itemInfo ->
+                getChildAt(it).layout(0, itemInfo.position * height, r - l, (itemInfo.position + 1) * height)
+            }
+
         }
     }
 
-    private fun itemInfoForView(child: View): ItemInfo {
+    private fun itemInfoForView(child: View): ItemInfo? {
         items.forEach {
             if (adapter!!.isViewFromObject(child, it.obj)) {
                 return it
             }
         }
-        throw NullPointerException()
+        return null
     }
 
     override fun computeScroll() {
